@@ -46,7 +46,6 @@
     label { display: block; color: #384b5f; font-size: 12px; font-weight: 650; }
     input, select { width: 100%; height: 43px; margin-top: 6px; border: 1px solid #d5dfe8; border-radius: 8px; background: white; color: var(--ink); padding: 0 11px; font: inherit; font-size: 14px; }
     input:focus, select:focus { outline: 3px solid #1769aa26; border-color: var(--blue); }
-    input[readonly] { background: #f5f8fa; color: #506275; }
     input[type="file"] { height: auto; min-height: 43px; padding: 8px; }
     .hint { margin: 12px 0 0; color: var(--muted); font-size: 12px; }
     .status-box { margin-top: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: #f8fafc; color: #4a5d71; font-size: 12px; }
@@ -154,7 +153,7 @@
             <div class="section-label">2 · Enter the next interval's known or forecast conditions</div>
             <div class="field-grid">
               <label>Next interval timestamp
-                <input id="forecast-timestamp" type="datetime-local" step="900" required readonly>
+                <input id="forecast-timestamp" type="datetime-local" step="900" required>
               </label>
               <label>Load type
                 <select id="load-type" required>
@@ -177,6 +176,7 @@
                 <input id="leading-factor" type="number" min="0" max="100" step="any" required>
               </label>
             </div>
+            <p class="hint">The timestamp is filled from your uploaded history and can be edited. For a valid forecast, it must be exactly 15 minutes after the latest uploaded reading.</p>
             <p class="hint">The model requires these future interval sensor values. Enter measurements or separately produced estimates; unknown future sensor readings cannot be inferred by this model.</p>
             <button id="predict-button" type="submit" disabled>⚡ Predict next interval</button>
           </form>
@@ -400,11 +400,20 @@
         showMessage("Upload at least 96 real consecutive history readings first.", "error");
         return;
       }
+      const forecastTimestamp = document.querySelector("#forecast-timestamp").value;
+      const expectedTimestamp = nextInterval(historyPoints[historyPoints.length - 1].timestamp);
+      if (forecastTimestamp !== expectedTimestamp) {
+        showMessage(
+          `Choose the next 15-minute interval after your uploaded history: ${expectedTimestamp.replace("T", " ")}.`,
+          "error",
+        );
+        return;
+      }
       forecastButton.disabled = true;
       document.querySelector("#historical-result").classList.remove("visible");
       message.className = "message";
       const future = {
-        timestamp: `${document.querySelector("#forecast-timestamp").value}:00`,
+        timestamp: `${forecastTimestamp}:00`,
         Load_Type: document.querySelector("#load-type").value,
         "Lagging_Current_Reactive.Power_kVarh": Number(document.querySelector("#lagging-reactive").value),
         "Leading_Current_Reactive_Power_kVarh": Number(document.querySelector("#leading-reactive").value),

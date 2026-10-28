@@ -46,6 +46,34 @@ python -m pip install -r requirements.txt
 
 In VS Code, choose `.venv/bin/python` as the workspace interpreter.
 
+## Public Vercel deployment
+
+The project is configured for Vercel's Python/FastAPI runtime. Vercel functions
+have an ephemeral filesystem, so uploaded models are persisted in MongoDB Atlas
+GridFS rather than relying on local files. CSV model-training uploads require a
+private `STEEL_TRAINING_TOKEN`; the browser sends it as a bearer token. Never
+commit either secret to GitHub.
+
+1. Create a MongoDB Atlas cluster and database user. Add the connection URI as
+   the `MONGODB_URI` environment variable in the Vercel project's Production
+   settings. Because Vercel functions use dynamic outbound IPs, Atlas network
+   access must permit those connections; use a strong database password and
+   restrict the database user's permissions to the project's database.
+2. Create a long random training key and add it as the
+   `STEEL_TRAINING_TOKEN` Vercel Production environment variable. Share this
+   key only with people allowed to trigger model training.
+3. In Vercel, import `yash9910147-design/energy` from GitHub, keep the project
+   root as the repository root, and deploy. `.python-version` and
+   `vercel.json` select Python 3.11 and configure the FastAPI function.
+4. Open the deployed site, enter the training key, and select a complete steel
+   dataset CSV. The trained model and held-out test data are saved in MongoDB
+   and reloaded by new function instances.
+
+Vercel's function request body limit is 4.5 MB; this app caps training uploads
+at 4 MiB on Vercel. Training is protected by the access key, but it still uses
+function compute and MongoDB storage. Check the current Vercel and Atlas
+quotas/pricing before using it with larger or frequent datasets.
+
 Run the focused project tests with:
 
 ```bash

@@ -8,6 +8,7 @@ from fastapi import HTTPException
 from starlette.requests import Request
 from pydantic import ValidationError
 
+from app import main as app_module
 from app.main import (
     FutureInterval,
     HistoricalTestRequest,
@@ -148,11 +149,42 @@ def test_configured_training_source_is_the_user_supplied_file() -> None:
     assert RAW_DATA_PATH.is_file()
 
 
-def _upload_request(csv_bytes: bytes, filename: str = "plant.csv") -> Request:
+def test_public_training_requires_access_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(app_module, "IS_VERCEL", True)
+    monkeypatch.delenv("STEEL_TRAINING_TOKEN", raising=False)
+
+    with pytest.raises(HTTPException) as error:
+        asyncio.run(train_uploaded_dataset(_upload_request(b"date,Usage_kWh\n")))
+
+    assert error.value.status_code == 503
+    assert "STEEL_TRAINING_TOKEN" in error.value.detail
+
+
+def test_public_training_rejects_wrong_access_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(app_module, "IS_VERCEL", True)
+    monkeypatch.setenv("STEEL_TRAINING_TOKEN", "configured-secret")
+    request = _upload_request(
+        b"date,Usage_kWh\n",
+        authorization="Bearer wrong-secret",
+    )
+
+    with pytest.raises(HTTPException) as error:
+        asyncio.run(train_uploaded_dataset(request))
+
+    assert error.value.status_code == 401
+
+
+def _upload_request(
+    csv_bytes: bytes,
+    filename: str = "plant.csv",
+    authorization: str | None = None,
+) -> Request:
     headers = [
         (b"content-type", b"text/csv"),
         (b"x-filename", filename.encode()),
     ]
+    if authorization:
+        headers.append((b"authorization", authorization.encode()))
     delivered = False
 
     async def receive() -> dict[str, object]:

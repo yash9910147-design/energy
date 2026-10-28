@@ -128,6 +128,10 @@
               <input id="history-file" type="file" accept=".csv,text/csv" required>
             </label>
             <p class="hint">Selecting a valid CSV starts preprocessing, chronological train/validation/test splitting, Random Forest and XGBoost tuning, test evaluation, and model activation. Required columns include date, Usage_kWh, reactive-power and power-factor readings, NSM, WeekStatus, Day_of_week, and Load_Type.</p>
+            <label id="training-key-control" for="training-key" hidden>Owner training access key
+              <input id="training-key" type="password" autocomplete="current-password">
+            </label>
+            <p class="hint" id="training-storage-warning" hidden>Training requires the access key and persistent MongoDB storage configured by the project owner.</p>
             <div id="history-status" class="status-box">No plant history uploaded yet.</div>
             <section id="training-result" class="card training-result" aria-live="polite">
               <div class="result-heading">Automatic training and unseen test results</div>
@@ -223,6 +227,7 @@
     const historyFile = document.querySelector("#history-file");
     const forecastButton = document.querySelector("#predict-button");
     let historyPoints = null;
+    let trainingRequiresAuth = false;
 
     function showMessage(text, kind) {
       message.textContent = text;
@@ -355,13 +360,19 @@
         historyPoints = await readHistory(file);
         const last = historyPoints[historyPoints.length - 1];
         document.querySelector("#forecast-timestamp").value = nextInterval(last.timestamp);
+        const headers = {
+          "Content-Type": "text/csv",
+          "X-Filename": encodeURIComponent(file.name),
+        };
+        if (trainingRequiresAuth) {
+          const trainingKey = document.querySelector("#training-key").value;
+          if (!trainingKey) throw new Error("Enter the owner training access key before selecting a dataset.");
+          headers.Authorization = `Bearer ${trainingKey}`;
+        }
         historyStatus.textContent = "CSV looks usable for history. Uploading and training both candidate models; this may take a minute…";
         const response = await fetch("/train", {
           method: "POST",
-          headers: {
-            "Content-Type": "text/csv",
-            "X-Filename": encodeURIComponent(file.name),
-          },
+          headers,
           body: file,
         });
         const payload = await response.json();
@@ -457,6 +468,10 @@
       ]);
       if (!healthResponse.ok) throw new Error("Could not check the model service.");
       const health = await healthResponse.json();
+      trainingRequiresAuth = health.training_requires_auth === true;
+      document.querySelector("#training-key-control").hidden = !trainingRequiresAuth;
+      document.querySelector("#training-storage-warning").hidden =
+        !trainingRequiresAuth || health.persistent_storage_ready === true;
       document.querySelector("#service-status").textContent =
         health.model_ready ? "Model ready" : "Model unavailable";
       if (!health.model_ready) throw new Error("No trained model was found. Train a model first.");

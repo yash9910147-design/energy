@@ -1,14 +1,22 @@
 from pathlib import Path
+import os
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 RAW_DATA_PATH = ROOT_DIR / "Steel_industry_data 3.csv"
 UCI_DOWNLOAD_PATH = ROOT_DIR / "data" / "raw" / "steel_industry_data.csv"
-PROCESSED_DATA_DIR = ROOT_DIR / "data" / "processed"
-OUTPUT_DIR = ROOT_DIR / "outputs"
+IS_VERCEL = os.environ.get("VERCEL") == "1"
+RUNTIME_DATA_DIR = Path("/tmp/steel-energy") if IS_VERCEL else ROOT_DIR / "data"
+PROCESSED_DATA_DIR = RUNTIME_DATA_DIR / "processed"
+UPLOAD_DIR = RUNTIME_DATA_DIR / "uploads"
+OUTPUT_DIR = Path("/tmp/steel-energy/outputs") if IS_VERCEL else ROOT_DIR / "outputs"
 REPORT_DIR = OUTPUT_DIR / "reports"
 FIGURE_DIR = OUTPUT_DIR / "figures"
 LOG_DIR = OUTPUT_DIR / "logs"
-MODEL_DIR = ROOT_DIR / "artifacts" / "models"
+MODEL_DIR = (
+    Path("/tmp/steel-energy/artifacts/models")
+    if IS_VERCEL
+    else ROOT_DIR / "artifacts" / "models"
+)
 
 TARGET = "Usage_kWh"
 TIMESTAMP = "date"

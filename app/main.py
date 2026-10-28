@@ -1,4 +1,5 @@
 import json
+import hmac
 import logging
 import os
 import shutil
@@ -24,8 +25,14 @@ from steel_energy.config import (
     PROCESSED_DATA_DIR,
     REPORT_DIR,
     ROOT_DIR,
+    UPLOAD_DIR,
     TARGET,
     TIMESTAMP,
+)
+from steel_energy.deployment_store import (
+    download_artifact,
+    load_active_version,
+    publish_version,
 )
 from steel_energy.feature_rows import build_inference_row
 from steel_energy.evaluation import evaluate_models
@@ -36,16 +43,49 @@ from steel_energy.preprocessing import REQUIRED_COLUMNS, run_preprocessing
 LOGGER = logging.getLogger(__name__)
 LOG_LOCK = Lock()
 TRAIN_LOCK = Lock()
-MAX_UPLOAD_BYTES = 25 * 1024 * 1024
+IS_VERCEL = os.environ.get("VERCEL") == "1"
+MAX_UPLOAD_BYTES = 4 * 1024 * 1024 if IS_VERCEL else 25 * 1024 * 1024
 LOAD_TYPES = Literal["Light_Load", "Medium_Load", "Maximum_Load"]
 WEB_UI_PATH = Path(__file__).parent / "static" / "index.html"
-IS_VERCEL = os.environ.get("VERCEL") == "1"
+_SYNCED_CLOUD_VERSION: str | None = None
 PREDICTION_LOG = Path(
     os.environ.get(
         "STEEL_PREDICTION_LOG",
         str(Path("/tmp/steel_energy_predictions.jsonl") if IS_VERCEL else LOG_DIR / "predictions.jsonl"),
     )
 )
+
+
+def _seed_vercel_runtime() -> None:
+    if not IS_VERCEL:
+        return
+    active_manifest = ROOT_DIR / "artifacts" / "models" / "active_model.json"
+    if not active_manifest.is_file():
+        raise FileNotFoundError(f"Bundled active model manifest is missing: {active_manifest}")
+    manifest = json.loads(active_manifest.read_text(encoding="utf-8"))
+    MODEL_DIR.mkdir(parents=True, exist_ok=True)
+    PROCESSED_DATA_DIR.mkdir(parents=True, exist_ok=True)
+    REPORT_DIR.mkdir(parents=True, exist_ok=True)
+    for source, destination in (
+        (active_manifest, MODEL_DIR / active_manifest.name),
+        (
+            ROOT_DIR / "artifacts" / "models" / manifest["model_path"],
+            MODEL_DIR / manifest["model_path"],
+        ),
+        (
+            ROOT_DIR / "data" / "processed" / "test.csv",
+            PROCESSED_DATA_DIR / "test.csv",
+        ),
+    ):
+        if not source.is_file():
+            raise FileNotFoundError(f"Bundled runtime artifact is missing: {source}")
+        shutil.copy2(source, destination)
+    summary = ROOT_DIR / "outputs" / "reports" / f"upload_training_{manifest['model_version']}.json"
+    if summary.is_file():
+        shutil.copy2(summary, REPORT_DIR / summary.name)
+
+
+_seed_vercel_runtime()
 
 app = FastAPI(
     title="Steel Industry Energy Consumption Forecast API",
@@ -62,6 +102,56 @@ def home() -> FileResponse:
     if not WEB_UI_PATH.is_file():
         raise HTTPException(status_code=500, detail="The prediction web interface is missing.")
     return FileResponse(WEB_UI_PATH)
+
+
+def _sync_vercel_training_state() -> None:
+    global _SYNCED_CLOUD_VERSION
+    if not IS_VERCEL or not os.environ.get("MONGODB_URI"):
+        return
+    try:
+        state = load_active_version()
+        if state is None:
+            return
+        version = str(state["model_version"])
+        if version == _SYNCED_CLOUD_VERSION:
+            return
+        for pathname in state["artifacts"]:
+            artifact_path = Path(str(pathname))
+            if artifact_path.parts[0] == "models":
+                destination = MODEL_DIR / artifact_path.name
+            elif artifact_path.parts[0] == "processed":
+                destination = PROCESSED_DATA_DIR / artifact_path.name
+            elif artifact_path.parts[0] == "reports":
+                destination = REPORT_DIR / artifact_path.name
+            else:
+                raise ValueError(f"Unsupported persisted model artifact: {pathname}")
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            temporary_path = destination.with_suffix(destination.suffix + ".tmp")
+            temporary_path.write_bytes(download_artifact(str(pathname)))
+            temporary_path.replace(destination)
+        _SYNCED_CLOUD_VERSION = version
+        _load_model.cache_clear()
+    except Exception as error:
+        LOGGER.exception("Could not synchronize trained artifacts from MongoDB.")
+        raise HTTPException(
+            status_code=503,
+            detail=f"Could not load persisted model state from MongoDB: {error}",
+        ) from error
+
+
+def _require_training_authorization(request: Request) -> None:
+    if not IS_VERCEL:
+        return
+    expected_token = os.environ.get("STEEL_TRAINING_TOKEN")
+    if not expected_token:
+        raise HTTPException(
+            status_code=503,
+            detail="Set the STEEL_TRAINING_TOKEN environment variable to enable protected model training.",
+        )
+    authorization = request.headers.get("authorization", "")
+    scheme, _, supplied_token = authorization.partition(" ")
+    if scheme.lower() != "bearer" or not hmac.compare_digest(supplied_token, expected_token):
+        raise HTTPException(status_code=401, detail="A valid model-training access key is required.")
 
 
 class HistoryPoint(BaseModel):
@@ -179,6 +269,7 @@ def _append_prediction_log(
 
 @app.get("/health")
 def health() -> dict[str, object]:
+    _sync_vercel_training_state()
     manifest_path = MODEL_DIR / "active_model.json"
     model_ready = False
     model_version = None
@@ -194,11 +285,21 @@ def health() -> dict[str, object]:
         "model_ready": model_ready,
         "model_version": model_version,
         "model_name": model_name,
+        "training_requires_auth": IS_VERCEL,
+        "persistent_storage_ready": not IS_VERCEL or bool(os.environ.get("MONGODB_URI")),
     }
 
 
 @app.post("/train")
 async def train_uploaded_dataset(request: Request) -> dict[str, object]:
+    global _SYNCED_CLOUD_VERSION
+    _require_training_authorization(request)
+    if IS_VERCEL and not os.environ.get("MONGODB_URI"):
+        raise HTTPException(
+            status_code=503,
+            detail="MongoDB persistent storage is not configured for model training.",
+        )
+    _sync_vercel_training_state()
     if not TRAIN_LOCK.acquire(blocking=False):
         raise HTTPException(
             status_code=409,
@@ -219,7 +320,10 @@ async def train_uploaded_dataset(request: Request) -> dict[str, object]:
             if len(payload) > MAX_UPLOAD_BYTES:
                 raise HTTPException(
                     status_code=413,
-                    detail="CSV upload exceeds the 25 MB project limit.",
+                    detail=(
+                        f"CSV upload exceeds the {MAX_UPLOAD_BYTES // (1024 * 1024)} MiB "
+                        "project limit."
+                    ),
                 )
         if not payload:
             raise HTTPException(status_code=400, detail="Uploaded CSV is empty.")
@@ -314,7 +418,7 @@ async def train_uploaded_dataset(request: Request) -> dict[str, object]:
                 json.dumps(training_report, indent=2, default=float) + "\n",
                 encoding="utf-8",
             )
-            upload_dir = ROOT_DIR / "data" / "uploads"
+            upload_dir = UPLOAD_DIR
             upload_dir.mkdir(parents=True, exist_ok=True)
             persisted_dataset = upload_dir / f"{next_version}_{filename}"
             persisted_tmp = persisted_dataset.with_suffix(".csv.tmp")
@@ -384,6 +488,33 @@ async def train_uploaded_dataset(request: Request) -> dict[str, object]:
                 encoding="utf-8",
             )
 
+            if IS_VERCEL:
+                cloud_artifacts = {
+                    f"models/{model_path.name}": model_path.read_bytes()
+                    for model_path in MODEL_DIR.glob(f"*_{next_version}.joblib")
+                }
+                cloud_artifacts.update(
+                    {
+                        "models/active_model.json": current_manifest_path.read_bytes(),
+                        "processed/test.csv": (PROCESSED_DATA_DIR / "test.csv").read_bytes(),
+                        f"reports/upload_training_{next_version}.json": (
+                            REPORT_DIR / f"upload_training_{next_version}.json"
+                        ).read_bytes(),
+                        "reports/training_report.json": (
+                            REPORT_DIR / "training_report.json"
+                        ).read_bytes(),
+                    }
+                )
+                try:
+                    publish_version(next_version, cloud_artifacts)
+                    _SYNCED_CLOUD_VERSION = next_version
+                except Exception as error:
+                    LOGGER.exception("Could not persist trained artifacts to MongoDB.")
+                    raise HTTPException(
+                        status_code=503,
+                        detail=f"Training finished but MongoDB could not save the new model: {error}",
+                    ) from error
+
             if PREDICTION_LOG.is_file() and PREDICTION_LOG.stat().st_size:
                 archived_log = PREDICTION_LOG.with_name(
                     f"predictions_before_{next_version}.jsonl"
@@ -424,6 +555,7 @@ async def train_uploaded_dataset(request: Request) -> dict[str, object]:
 
 @app.get("/historical-test-info")
 def historical_test_info() -> dict[str, object]:
+    _sync_vercel_training_state()
     test_path = PROCESSED_DATA_DIR / "test.csv"
     if not test_path.is_file():
         raise HTTPException(
@@ -445,6 +577,7 @@ def historical_test_info() -> dict[str, object]:
 
 @app.get("/training-summary")
 def training_summary() -> dict[str, object]:
+    _sync_vercel_training_state()
     manifest_path = MODEL_DIR / "active_model.json"
     if not manifest_path.is_file():
         return {"available": False}
@@ -475,6 +608,7 @@ def training_summary() -> dict[str, object]:
 
 @app.post("/historical-test")
 def historical_test(request: HistoricalTestRequest) -> dict[str, object]:
+    _sync_vercel_training_state()
     test_path = PROCESSED_DATA_DIR / "test.csv"
     if not test_path.is_file():
         raise HTTPException(
@@ -526,6 +660,7 @@ def historical_test(request: HistoricalTestRequest) -> dict[str, object]:
 
 @app.post("/predict")
 def predict(request: PredictionRequest) -> dict[str, object]:
+    _sync_vercel_training_state()
     manifest_path = MODEL_DIR / "active_model.json"
     if not manifest_path.exists():
         raise HTTPException(

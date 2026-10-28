@@ -41,7 +41,7 @@ virtual environment, then install the project dependencies:
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
+python -m pip install -r requirements-dev.txt
 ```
 
 In VS Code, choose `.venv/bin/python` as the workspace interpreter.
@@ -63,8 +63,10 @@ commit either secret to GitHub.
    `STEEL_TRAINING_TOKEN` Vercel Production environment variable. Share this
    key only with people allowed to trigger model training.
 3. In Vercel, import `yash9910147-design/energy` from GitHub, keep the project
-   root as the repository root, and deploy. `.python-version` and
-   `vercel.json` select Python 3.11 and configure the FastAPI function.
+   root as the repository root, and deploy. `.python-version` selects Python
+   3.12, which Vercel supports, and `vercel.json` configures the FastAPI function.
+   The production requirements use CPU-only XGBoost on Linux to stay within
+   Vercel's function bundle limit.
 4. Open the deployed site, enter the training key, and select a complete steel
    dataset CSV. The trained model and held-out test data are saved in MongoDB
    and reloaded by new function instances.

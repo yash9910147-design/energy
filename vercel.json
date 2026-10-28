@@ -3,12 +3,7 @@
   "functions": {
     "app/main.py": {
       "maxDuration": 300,
-      "includeFiles": [
-        "app/static/index.html",
-        "artifacts/models/**",
-        "data/processed/test.csv",
-        "outputs/reports/upload_training_v6.json"
-      ]
+      "includeFiles": "{app/static/index.html,artifacts/models/**,data/processed/test.csv,outputs/reports/upload_training_v6.json}"
     }
   }
 }

@@ -1,0 +1,36 @@
+{
+  "selected_model": "random_forest",
+  "selected_model_rmse": 1.3029758694959375,
+  "models": {
+    "persistence_baseline": {
+      "model": "persistence_baseline",
+      "MAE": 5.725339565051508,
+      "MSE": 162.6176811331553,
+      "RMSE": 12.75216378240004,
+      "MAPE_percent_nonzero_actuals": 24.27572461230524,
+      "R2": 0.8257646054057819,
+      "rows": 5242,
+      "zero_actual_rows_excluded_from_MAPE": 1
+    },
+    "random_forest": {
+      "model": "random_forest",
+      "MAE": 0.6249727710440678,
+      "MSE": 1.6977461164886944,
+      "RMSE": 1.3029758694959375,
+      "MAPE_percent_nonzero_actuals": 7.653958488858106,
+      "R2": 0.9981809637029261,
+      "rows": 5242,
+      "zero_actual_rows_excluded_from_MAPE": 1
+    },
+    "xgboost": {
+      "model": "xgboost",
+      "MAE": 0.7477087528857508,
+      "MSE": 1.9496213660966044,
+      "RMSE": 1.3962884251101577,
+      "MAPE_percent_nonzero_actuals": 6.819970205313488,
+      "R2": 0.9979110940110318,
+      "rows": 5242,
+      "zero_actual_rows_excluded_from_MAPE": 1
+    }
+  }
+}

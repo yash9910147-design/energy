@@ -1,0 +1,128 @@
+{
+  "prediction_log_records": 5242,
+  "unique_prediction_timestamps": 5242,
+  "drift": {
+    "threshold": 0.2,
+    "minimum_current_rows": 100,
+    "reference_rows": 24460,
+    "current_rows": 5242,
+    "status": "evaluated",
+    "features": {
+      "Lagging_Current_Reactive.Power_kVarh": {
+        "psi": 0.4013320823695738,
+        "drift_detected": true
+      },
+      "Leading_Current_Reactive_Power_kVarh": {
+        "psi": 0.0922985907900797,
+        "drift_detected": false
+      },
+      "Lagging_Current_Power_Factor": {
+        "psi": 0.34808738498117076,
+        "drift_detected": true
+      },
+      "Leading_Current_Power_Factor": {
+        "psi": 0.08877584933702481,
+        "drift_detected": false
+      },
+      "NSM": {
+        "psi": 9.477999871438233e-05,
+        "drift_detected": false
+      },
+      "hour": {
+        "psi": 8.95342447787862e-05,
+        "drift_detected": false
+      },
+      "day": {
+        "psi": 0.07207132828146068,
+        "drift_detected": false
+      },
+      "day_of_week_num": {
+        "psi": 0.0031588467564558163,
+        "drift_detected": false
+      },
+      "day_of_year": {
+        "psi": 20.10251231024452,
+        "drift_detected": true
+      },
+      "month": {
+        "psi": 18.224619406671057,
+        "drift_detected": true
+      },
+      "minute": {
+        "psi": 1.4579877833627505e-07,
+        "drift_detected": false
+      },
+      "is_weekend": {
+        "psi": 0.0,
+        "drift_detected": false
+      },
+      "lag_1": {
+        "psi": 0.31762156073514236,
+        "drift_detected": true
+      },
+      "lag_4": {
+        "psi": 0.3174589116636208,
+        "drift_detected": true
+      },
+      "lag_96": {
+        "psi": 0.30477597442089344,
+        "drift_detected": true
+      },
+      "rolling_mean_4": {
+        "psi": 0.38948409035213233,
+        "drift_detected": true
+      },
+      "rolling_std_4": {
+        "psi": 0.11152201624347025,
+        "drift_detected": false
+      },
+      "rolling_mean_96": {
+        "psi": 0.21538063290114257,
+        "drift_detected": true
+      },
+      "WeekStatus": {
+        "psi": 0.0005311928998225538,
+        "drift_detected": false
+      },
+      "Day_of_week": {
+        "psi": 0.003158801875087798,
+        "drift_detected": false
+      },
+      "Load_Type": {
+        "psi": 0.005472080799355438,
+        "drift_detected": false
+      }
+    },
+    "drifted_features": [
+      "Lagging_Current_Reactive.Power_kVarh",
+      "Lagging_Current_Power_Factor",
+      "day_of_year",
+      "month",
+      "lag_1",
+      "lag_4",
+      "lag_96",
+      "rolling_mean_4",
+      "rolling_mean_96"
+    ]
+  },
+  "drift_evaluation_required": true,
+  "performance": {
+    "rows_matched": 5242,
+    "metrics": {
+      "MAE": 1.0309550243758054,
+      "MSE": 5.646298389593214,
+      "RMSE": 2.376194097626121,
+      "MAPE_percent_nonzero_actuals": 8.05935108873274,
+      "R2": 0.9941937177448319,
+      "rows": 5242,
+      "zero_actual_rows_excluded_from_MAPE": 0
+    },
+    "minimum_rows_for_trigger": 100,
+    "rmse_threshold": 1.6287198368699218,
+    "mape_threshold_percent": 20.0,
+    "evaluation_required": true,
+    "triggers": [
+      "RMSE exceeds 1.25 times validation RMSE"
+    ]
+  }
+}

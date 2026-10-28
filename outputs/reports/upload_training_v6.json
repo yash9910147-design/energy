@@ -1,0 +1,129 @@
+{
+  "source_file": "data/uploads/v6_Steel_industry_data 3.csv",
+  "model_version": "v6",
+  "selected_model": "random_forest",
+  "selection_metric": "Lowest validation RMSE; test data was not used for model selection.",
+  "validation_rmse": 1.3029758694959375,
+  "validation_metrics": {
+    "random_forest": {
+      "MAE": 0.6249727710440678,
+      "MSE": 1.6977461164886944,
+      "RMSE": 1.3029758694959375,
+      "MAPE_percent_nonzero_actuals": 7.653958488858106,
+      "R2": 0.9981809637029261,
+      "rows": 5242,
+      "zero_actual_rows_excluded_from_MAPE": 1
+    },
+    "xgboost": {
+      "MAE": 0.7477087528857508,
+      "MSE": 1.9496213660966044,
+      "RMSE": 1.3962884251101577,
+      "MAPE_percent_nonzero_actuals": 6.819970205313488,
+      "R2": 0.9979110940110318,
+      "rows": 5242,
+      "zero_actual_rows_excluded_from_MAPE": 1
+    }
+  },
+  "test_metrics": {
+    "persistence_baseline": {
+      "MAE": 5.055679130103014,
+      "MSE": 135.83222760396794,
+      "RMSE": 11.654708387770496,
+      "MAPE_percent_nonzero_actuals": 20.10507625309415,
+      "R2": 0.8603190624373483,
+      "rows": 5242,
+      "zero_actual_rows_excluded_from_MAPE": 0
+    },
+    "random_forest": {
+      "MAE": 1.0309550243758054,
+      "MSE": 5.646298389593214,
+      "RMSE": 2.376194097626121,
+      "MAPE_percent_nonzero_actuals": 8.05935108873274,
+      "R2": 0.9941937177448319,
+      "rows": 5242,
+      "zero_actual_rows_excluded_from_MAPE": 0
+    },
+    "xgboost": {
+      "MAE": 0.9659196883292201,
+      "MSE": 3.1839431808766414,
+      "RMSE": 1.7843607205037442,
+      "MAPE_percent_nonzero_actuals": 7.498920319798819,
+      "R2": 0.996725842044292,
+      "rows": 5242,
+      "zero_actual_rows_excluded_from_MAPE": 0
+    }
+  },
+  "test_comparison": [
+    {
+      "model": "persistence_baseline",
+      "MAE": 5.055679130103014,
+      "MSE": 135.83222760396794,
+      "RMSE": 11.654708387770496,
+      "MAPE_percent_nonzero_actuals": 20.10507625309415,
+      "R2": 0.8603190624373483,
+      "rows": 5242,
+      "zero_actual_rows_excluded_from_MAPE": 0
+    },
+    {
+      "model": "random_forest",
+      "MAE": 1.0309550243758054,
+      "MSE": 5.646298389593214,
+      "RMSE": 2.376194097626121,
+      "MAPE_percent_nonzero_actuals": 8.05935108873274,
+      "R2": 0.9941937177448319,
+      "rows": 5242,
+      "zero_actual_rows_excluded_from_MAPE": 0
+    },
+    {
+      "model": "xgboost",
+      "MAE": 0.9659196883292201,
+      "MSE": 3.1839431808766414,
+      "RMSE": 1.7843607205037442,
+      "MAPE_percent_nonzero_actuals": 7.498920319798819,
+      "R2": 0.996725842044292,
+      "rows": 5242,
+      "zero_actual_rows_excluded_from_MAPE": 0
+    }
+  ],
+  "split_rows": {
+    "source_file": "data/uploads/v6_Steel_industry_data 3.csv",
+    "input_rows": 35040,
+    "exact_duplicates_removed": 0,
+    "missing_intervals_inserted": 0,
+    "rows_with_missing_target": 0,
+    "rows_with_missing_features": 0,
+    "cleaned_rows": 35040,
+    "engineered_rows": 35040,
+    "usable_rows": 34944,
+    "train_rows": 24460,
+    "validation_rows": 5242,
+    "test_rows": 5242,
+    "target": "Usage_kWh",
+    "feature_columns": [
+      "Lagging_Current_Reactive.Power_kVarh",
+      "Leading_Current_Reactive_Power_kVarh",
+      "Lagging_Current_Power_Factor",
+      "Leading_Current_Power_Factor",
+      "NSM",
+      "hour",
+      "day",
+      "day_of_week_num",
+      "day_of_year",
+      "month",
+      "minute",
+      "is_weekend",
+      "lag_1",
+      "lag_4",
+      "lag_96",
+      "rolling_mean_4",
+      "rolling_std_4",
+      "rolling_mean_96",
+      "WeekStatus",
+      "Day_of_week",
+      "Load_Type"
+    ],
+    "first_timestamp": "2018-01-01 00:00:00",
+    "last_timestamp": "2018-12-31 23:45:00",
+    "dataset_report": "outputs/reports/dataset_description.md"
+  }
+}

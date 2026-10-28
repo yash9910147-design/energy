@@ -1,0 +1,14 @@
+{
+  "model_version": "v5",
+  "model_name": "random_forest",
+  "model_path": "random_forest_v5.joblib",
+  "model_artifacts": {
+    "random_forest": "random_forest_v5.joblib",
+    "xgboost": "xgboost_v5.joblib"
+  },
+  "preprocessor_path": "preprocessor_v5.joblib",
+  "trained_at_utc": "2026-10-28T10:04:18.003254+00:00",
+  "selection_metric": "validation RMSE (lower is better)",
+  "validation_rmse": 1.3029758694959375,
+  "test_period_used_during_selection": false
+}

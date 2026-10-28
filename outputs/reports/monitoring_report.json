@@ -1,0 +1,14 @@
+{
+  "prediction_log_records": 1,
+  "unique_prediction_timestamps": 1,
+  "drift": {
+    "threshold": 0.2,
+    "minimum_current_rows": 100,
+    "reference_rows": 24460,
+    "current_rows": 1,
+    "status": "insufficient_data",
+    "features": {},
+    "drifted_features": []
+  },
+  "drift_evaluation_required": false
+}

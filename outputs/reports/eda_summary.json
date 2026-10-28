@@ -1,0 +1,73 @@
+{
+  "target_summary": {
+    "count": 35040.0,
+    "mean": 27.3868924086758,
+    "std": 33.44437970801512,
+    "min": 0.0,
+    "25%": 3.2,
+    "50%": 4.57,
+    "75%": 51.2375,
+    "max": 157.18
+  },
+  "skewness": 1.1973938227692207,
+  "iqr_outlier_share": 0.009360730593607305,
+  "weekday_means": {
+    "Weekday": 33.62472701149425,
+    "Weekend": 11.73232672275641
+  },
+  "monthly_mean_usage": {
+    "1": 42.41878024193548,
+    "2": 34.03918898809523,
+    "3": 26.959143145161292,
+    "4": 27.350625,
+    "5": 26.565618279569893,
+    "6": 22.709944444444446,
+    "7": 27.444358198924732,
+    "8": 23.037442876344084,
+    "9": 20.098288194444443,
+    "10": 28.449479166666666,
+    "11": 29.93667013888889,
+    "12": 19.97203629032258
+  },
+  "load_type_summary": {
+    "Light_Load": {
+      "count": 18072,
+      "mean": 8.626206839309429,
+      "median": 3.31
+    },
+    "Maximum_Load": {
+      "count": 7272,
+      "mean": 59.26531353135314,
+      "median": 56.63
+    },
+    "Medium_Load": {
+      "count": 9696,
+      "mean": 38.44539397689769,
+      "median": 34.435
+    }
+  },
+  "target_correlations": {
+    "CO2(tCO2)": 0.9881797716789588,
+    "Lagging_Current_Reactive.Power_kVarh": 0.8961499010002353,
+    "Lagging_Current_Power_Factor": 0.3859604614141474,
+    "Leading_Current_Power_Factor": 0.35356570854787334,
+    "Leading_Current_Reactive_Power_kVarh": -0.3249217839454439,
+    "NSM": 0.23461032726439365
+  },
+  "autocorrelations": {
+    "1": 0.9115459739383571,
+    "4": 0.6867864545079121,
+    "96": 0.6062959009726046,
+    "672": 0.676702943038885
+  },
+  "insights": [
+    "Usage_kWh has skewness 1.20; the distribution is right-skewed relative to a symmetric distribution.",
+    "Mean usage is 27.39 kWh per interval and median is 4.57 kWh, indicating that the median is a useful robust reference.",
+    "Weekend mean usage is 11.73 kWh and weekday mean usage is 33.62 kWh.",
+    "Maximum_Load has the highest average usage (59.27 kWh per interval) among the recorded load types.",
+    "Monthly average usage is highest in January (42.42 kWh) and lowest in December (19.97 kWh); one year cannot establish a recurring annual season.",
+    "`CO2(tCO2)` has the largest absolute Pearson correlation with Usage_kWh among the numeric source features (r=0.988).",
+    "Autocorrelation is 0.912 at 15 minutes and 0.606 at 24 hours, supporting chronological lag features.",
+    "About 0.9% of target readings lie outside the 1.5-IQR whiskers; inspect these operating peaks rather than deleting them automatically."
+  ]
+}

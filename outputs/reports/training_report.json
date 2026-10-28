@@ -1,0 +1,120 @@
+{
+  "target": "Usage_kWh",
+  "feature_columns": [
+    "Lagging_Current_Reactive.Power_kVarh",
+    "Leading_Current_Reactive_Power_kVarh",
+    "Lagging_Current_Power_Factor",
+    "Leading_Current_Power_Factor",
+    "NSM",
+    "hour",
+    "day",
+    "day_of_week_num",
+    "day_of_year",
+    "month",
+    "minute",
+    "is_weekend",
+    "lag_1",
+    "lag_4",
+    "lag_96",
+    "rolling_mean_4",
+    "rolling_std_4",
+    "rolling_mean_96",
+    "WeekStatus",
+    "Day_of_week",
+    "Load_Type"
+  ],
+  "split_rows": {
+    "train": 24460,
+    "validation": 5242,
+    "test_reserved_for_final_evaluation": 5242
+  },
+  "selection": {
+    "model_version": "v6",
+    "model_name": "random_forest",
+    "model_path": "random_forest_v6.joblib",
+    "model_artifacts": {
+      "random_forest": "random_forest_v6.joblib",
+      "xgboost": "xgboost_v6.joblib"
+    },
+    "preprocessor_path": "preprocessor_v6.joblib",
+    "trained_at_utc": "2026-10-28T10:07:52.653905+00:00",
+    "selection_metric": "validation RMSE (lower is better)",
+    "validation_rmse": 1.3029758694959375,
+    "test_period_used_during_selection": false
+  },
+  "models": {
+    "random_forest": {
+      "best_params": {
+        "regressor__max_leaf_nodes": 512,
+        "regressor__n_estimators": 100
+      },
+      "best_cv_rmse": 2.5264201600912783,
+      "validation_metrics": {
+        "MAE": 0.6249727710440678,
+        "MSE": 1.6977461164886944,
+        "RMSE": 1.3029758694959375,
+        "MAPE_percent_nonzero_actuals": 7.653958488858106,
+        "R2": 0.9981809637029261,
+        "rows": 5242,
+        "zero_actual_rows_excluded_from_MAPE": 1
+      }
+    },
+    "xgboost": {
+      "best_params": {
+        "regressor__learning_rate": 0.05,
+        "regressor__max_depth": 5,
+        "regressor__n_estimators": 150
+      },
+      "best_cv_rmse": 2.1231949213466255,
+      "validation_metrics": {
+        "MAE": 0.7477087528857508,
+        "MSE": 1.9496213660966044,
+        "RMSE": 1.3962884251101577,
+        "MAPE_percent_nonzero_actuals": 6.819970205313488,
+        "R2": 0.9979110940110318,
+        "rows": 5242,
+        "zero_actual_rows_excluded_from_MAPE": 1
+      }
+    }
+  },
+  "validation_metrics": [
+    {
+      "model": "persistence_baseline",
+      "MAE": 5.725339565051508,
+      "MSE": 162.6176811331553,
+      "RMSE": 12.75216378240004,
+      "MAPE_percent_nonzero_actuals": 24.27572461230524,
+      "R2": 0.8257646054057819,
+      "rows": 5242,
+      "zero_actual_rows_excluded_from_MAPE": 1
+    },
+    {
+      "model": "random_forest",
+      "MAE": 0.6249727710440678,
+      "MSE": 1.6977461164886944,
+      "RMSE": 1.3029758694959375,
+      "MAPE_percent_nonzero_actuals": 7.653958488858106,
+      "R2": 0.9981809637029261,
+      "rows": 5242,
+      "zero_actual_rows_excluded_from_MAPE": 1
+    },
+    {
+      "model": "xgboost",
+      "MAE": 0.7477087528857508,
+      "MSE": 1.9496213660966044,
+      "RMSE": 1.3962884251101577,
+      "MAPE_percent_nonzero_actuals": 6.819970205313488,
+      "R2": 0.9979110940110318,
+      "rows": 5242,
+      "zero_actual_rows_excluded_from_MAPE": 1
+    }
+  ],
+  "artifacts": {
+    "random_forest": "artifacts/models/random_forest_v6.joblib",
+    "xgboost": "artifacts/models/xgboost_v6.joblib"
+  },
+  "best_model_path": "artifacts/models/random_forest_v6.joblib",
+  "preprocessor_path": "artifacts/models/preprocessor_v6.joblib",
+  "tuning": "GridSearchCV with TimeSeriesSplit(n_splits=3), training partition only.",
+  "baseline": "Persistence forecast: next interval Usage_kWh equals lag_1."
+}

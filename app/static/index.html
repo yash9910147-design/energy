@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101c2c">
+  <title>Steel Energy | Forecast Studio</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17283b;
+      --muted: #62748a;
+      --line: #e3eaf0;
+      --blue: #1769aa;
+      --blue-dark: #0e4b7f;
+      --canvas: #f3f6f9;
+      --green: #16845b;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--canvas); color: var(--ink); font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    header { background: #101c2c; color: white; padding: 18px max(24px, calc((100% - 1120px) / 2)); display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; }
+    .brand-mark { display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid #496176; border-radius: 11px; color: #80c4ff; font-size: 19px; }
+    .brand small { display: block; color: #9eafbf; font-size: 12px; font-weight: 400; }
+    .service-status { display: flex; align-items: center; gap: 8px; color: #c8d6e2; font-size: 13px; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #55d69a; }
+    main { width: min(1120px, calc(100% - 40px)); margin: 44px auto 64px; }
+    .intro { margin-bottom: 28px; }
+    .eyebrow { color: var(--blue); font-size: 12px; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { margin: 8px 0; font-size: clamp(29px, 4vw, 39px); letter-spacing: -.035em; line-height: 1.15; }
+    .intro p { max-width: 760px; margin: 12px 0 0; color: var(--muted); font-size: 16px; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(275px, .8fr); gap: 22px; align-items: start; }
+    .card { border: 1px solid var(--line); border-radius: 16px; background: white; box-shadow: 0 8px 24px #17283b0a; }
+    .form-card { padding: 27px; }
+    .card-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+    h2 { margin: 0; font-size: 19px; letter-spacing: -.02em; }
+    .subheading { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+    .tag { padding: 5px 9px; border-radius: 999px; background: #eaf5ff; color: var(--blue-dark); font-size: 11px; font-weight: 700; white-space: nowrap; }
+    .tabs { display: flex; gap: 8px; border-bottom: 1px solid var(--line); margin-bottom: 20px; }
+    .tab { min-height: 39px; margin: 0 0 -1px; border-radius: 8px 8px 0 0; border: 1px solid transparent; background: transparent; color: var(--muted); padding: 0 13px; font-size: 13px; }
+    .tab:hover { background: #f6f9fb; color: var(--ink); }
+    .tab.active { border-color: var(--line) var(--line) white; background: white; color: var(--blue-dark); }
+    .panel[hidden] { display: none; }
+    .section-label { margin: 19px 0 11px; color: #394d62; font-size: 12px; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; }
+    .field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    label { display: block; color: #384b5f; font-size: 12px; font-weight: 650; }
+    input, select { width: 100%; height: 43px; margin-top: 6px; border: 1px solid #d5dfe8; border-radius: 8px; background: white; color: var(--ink); padding: 0 11px; font: inherit; font-size: 14px; }
+    input:focus, select:focus { outline: 3px solid #1769aa26; border-color: var(--blue); }
+    input[readonly] { background: #f5f8fa; color: #506275; }
+    input[type="file"] { height: auto; min-height: 43px; padding: 8px; }
+    .hint { margin: 12px 0 0; color: var(--muted); font-size: 12px; }
+    .status-box { margin-top: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: #f8fafc; color: #4a5d71; font-size: 12px; }
+    .status-box.success { border-color: #b7e5cd; background: #edf8f2; color: #176642; }
+    button { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 45px; margin-top: 19px; border: 0; border-radius: 9px; background: var(--blue); color: white; padding: 0 18px; font: inherit; font-weight: 700; cursor: pointer; }
+    button:hover { background: var(--blue-dark); }
+    button:disabled { cursor: not-allowed; opacity: .55; }
+    .side-card { padding: 23px; }
+    .side-card h2 { font-size: 17px; }
+    .steps { display: grid; gap: 17px; margin-top: 22px; }
+    .step { display: grid; grid-template-columns: 31px 1fr; gap: 11px; align-items: start; }
+    .step-number { display: grid; place-items: center; width: 29px; height: 29px; border-radius: 9px; background: #eaf5ff; color: var(--blue-dark); font-size: 12px; font-weight: 750; }
+    .step strong { display: block; font-size: 13px; }
+    .step span { display: block; margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .model-chip { margin-top: 23px; padding: 13px; border: 1px solid var(--line); border-radius: 10px; background: #f8fafc; }
+    .model-chip span { display: block; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+    .model-chip strong { display: block; margin-top: 4px; font-size: 13px; }
+    .result { display: none; margin-top: 20px; padding: 21px; }
+    .result.visible { display: block; }
+    .result-heading { color: var(--muted); font-size: 13px; }
+    .result-value { margin-top: 4px; font-size: clamp(32px, 6vw, 44px); font-weight: 750; letter-spacing: -.045em; }
+    .result-value small { color: var(--muted); font-size: 15px; font-weight: 550; letter-spacing: 0; }
+    .result-meta { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 11px; color: var(--muted); font-size: 12px; }
+    .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+    .comparison div { padding: 11px; border: 1px solid var(--line); border-radius: 9px; }
+    .comparison span { display: block; color: var(--muted); font-size: 11px; }
+    .comparison strong { display: block; margin-top: 3px; font-size: 18px; }
+    .training-result { display: none; margin-top: 20px; padding: 22px; }
+    .training-result.visible { display: block; }
+    .training-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(125px, 1fr)); gap: 10px; margin-top: 16px; }
+    .training-metrics div { min-width: 0; padding: 12px; border: 1px solid var(--line); border-radius: 9px; }
+    .training-metrics span { display: block; color: var(--muted); font-size: 11px; }
+    .training-metrics strong { display: block; margin-top: 4px; font-size: 17px; overflow-wrap: anywhere; }
+    .training-table-wrap { overflow-x: auto; margin-top: 18px; }
+    .training-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .training-table th, .training-table td { border-bottom: 1px solid var(--line); padding: 9px 8px; text-align: right; white-space: nowrap; }
+    .training-table th:first-child, .training-table td:first-child { text-align: left; }
+    .training-table th { color: var(--muted); font-weight: 650; }
+    .message { display: none; margin-top: 14px; padding: 11px 13px; border-radius: 8px; font-size: 13px; }
+    .message.visible { display: block; }
+    .message.error { background: #fff0ef; color: #9d2922; }
+    .message.info { background: #edf8f2; color: #176642; }
+    footer { margin-top: 25px; color: #78889a; font-size: 12px; text-align: center; }
+    @media (max-width: 760px) { header { padding: 14px 20px; } main { margin-top: 30px; } .layout { grid-template-columns: 1fr; } }
+    @media (max-width: 460px) { .field-grid { grid-template-columns: 1fr; } .form-card { padding: 20px; } .service-status { font-size: 0; } .tabs { gap: 2px; } .tab { padding: 0 8px; font-size: 12px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">⚡</div>
+      <div>Steel Energy Forecast<small>Machine learning lab project</small></div>
+    </div>
+    <div class="service-status"><span class="status-dot"></span><span id="service-status">Checking model…</span></div>
+  </header>
+  <main>
+    <section class="intro">
+      <div class="eyebrow">Steel industry · 15-minute energy forecasting</div>
+      <h1>Forecast plant energy use.</h1>
+      <p>Use your actual plant readings for a future forecast, or inspect a clearly labelled held-out historical test prediction. The app does not invent live sensor readings.</p>
+    </section>
+    <div class="layout">
+      <section class="card form-card">
+        <div class="card-heading">
+          <div>
+            <h2>Choose a prediction workflow</h2>
+            <p class="subheading">The trained model is served by this FastAPI application.</p>
+          </div>
+          <span class="tag" id="model-version-tag">MODEL</span>
+        </div>
+        <div class="tabs" role="tablist" aria-label="Prediction workflow">
+          <button class="tab active" id="live-tab" type="button" role="tab" aria-selected="true">Future forecast</button>
+          <button class="tab" id="historical-tab" type="button" role="tab" aria-selected="false">Historical test</button>
+        </div>
+        <section class="panel" id="live-panel" role="tabpanel" aria-labelledby="live-tab">
+          <form id="prediction-form">
+            <div class="section-label">1 · Upload your complete steel dataset to train automatically</div>
+            <label for="history-file">CSV with target, timestamp, sensor and load columns
+              <input id="history-file" type="file" accept=".csv,text/csv" required>
+            </label>
+            <p class="hint">Selecting a valid CSV starts preprocessing, chronological train/validation/test splitting, Random Forest and XGBoost tuning, test evaluation, and model activation. Required columns include date, Usage_kWh, reactive-power and power-factor readings, NSM, WeekStatus, Day_of_week, and Load_Type.</p>
+            <div id="history-status" class="status-box">No plant history uploaded yet.</div>
+            <section id="training-result" class="card training-result" aria-live="polite">
+              <div class="result-heading">Automatic training and unseen test results</div>
+              <div class="result-meta" id="training-summary"></div>
+              <div class="training-metrics">
+                <div><span>Selected model</span><strong id="trained-model">—</strong></div>
+                <div><span>Test MAPE · lower is better</span><strong id="trained-mape">—</strong></div>
+                <div><span>Test RMSE</span><strong id="trained-rmse">—</strong></div>
+                <div><span>Test MAE</span><strong id="trained-mae">—</strong></div>
+                <div><span>Test R² · higher is better</span><strong id="trained-r2">—</strong></div>
+              </div>
+              <div class="training-table-wrap">
+                <table class="training-table">
+                  <thead><tr><th>Model</th><th>Validation RMSE</th><th>Test RMSE</th><th>Test MAPE</th></tr></thead>
+                  <tbody id="training-comparison"></tbody>
+                </table>
+              </div>
+              <p class="hint">Model choice uses the lowest validation RMSE. Test metrics are reported only after selection; regression has no single universal accuracy percentage. MAPE excludes zero-usage records.</p>
+            </section>
+            <div class="section-label">2 · Enter the next interval's known or forecast conditions</div>
+            <div class="field-grid">
+              <label>Next interval timestamp
+                <input id="forecast-timestamp" type="datetime-local" step="900" required readonly>
+              </label>
+              <label>Load type
+                <select id="load-type" required>
+                  <option value="">Select load type</option>
+                  <option value="Light_Load">Light Load</option>
+                  <option value="Medium_Load">Medium Load</option>
+                  <option value="Maximum_Load">Maximum Load</option>
+                </select>
+              </label>
+              <label>Lagging reactive power (kVarh)
+                <input id="lagging-reactive" type="number" min="0" step="any" required>
+              </label>
+              <label>Leading reactive power (kVarh)
+                <input id="leading-reactive" type="number" min="0" step="any" required>
+              </label>
+              <label>Lagging power factor (0–100)
+                <input id="lagging-factor" type="number" min="0" max="100" step="any" required>
+              </label>
+              <label>Leading power factor (0–100)
+                <input id="leading-factor" type="number" min="0" max="100" step="any" required>
+              </label>
+            </div>
+            <p class="hint">The model requires these future interval sensor values. Enter measurements or separately produced estimates; unknown future sensor readings cannot be inferred by this model.</p>
+            <button id="predict-button" type="submit" disabled>⚡ Predict next interval</button>
+          </form>
+        </section>
+        <section class="panel" id="historical-panel" role="tabpanel" aria-labelledby="historical-tab" hidden>
+          <form id="historical-form">
+            <div class="section-label">Evaluate a real held-out test observation</div>
+            <p class="hint">The app uses actual sensor values and earlier actual history from the dataset's unseen test split, then compares the model prediction with the recorded Usage_kWh. This is a historical one-step test—not a future forecast.</p>
+            <div id="test-range" class="status-box">Loading the held-out test period…</div>
+            <label for="historical-timestamp">Historical test timestamp
+              <input id="historical-timestamp" type="datetime-local" step="900" required>
+            </label>
+            <button id="historical-button" type="submit" disabled>Compare prediction with actual</button>
+          </form>
+        </section>
+        <div id="message" class="message" role="status" aria-live="polite"></div>
+        <section id="forecast-result" class="card result" aria-live="polite">
+          <div class="result-heading">Predicted energy consumption</div>
+          <div class="result-value"><span id="forecast-value">—</span> <small>kWh</small></div>
+          <div class="result-meta"><span id="forecast-meta"></span></div>
+        </section>
+        <section id="historical-result" class="card result" aria-live="polite">
+          <div class="result-heading">Held-out historical model check</div>
+          <div class="comparison">
+            <div><span>Actual Usage_kWh</span><strong id="actual-value">—</strong></div>
+            <div><span>Predicted Usage_kWh</span><strong id="historical-value">—</strong></div>
+            <div><span>Absolute error</span><strong id="error-value">—</strong></div>
+            <div><span>Test timestamp</span><strong id="historical-time">—</strong></div>
+          </div>
+          <div class="result-meta">This actual-vs-predicted check uses the held-out test set. It is not a forecast of the present.</div>
+        </section>
+      </section>
+      <aside class="card side-card">
+        <h2>What the model needs</h2>
+        <p class="subheading">Inputs expected for a 15-minute Usage_kWh forecast.</p>
+        <div class="steps">
+          <div class="step"><div class="step-number">01</div><div><strong>Upload training dataset</strong><span>Training and chronological evaluation start automatically after CSV selection.</span></div></div>
+          <div class="step"><div class="step-number">02</div><div><strong>Next interval sensor readings</strong><span>Reactive power, power factors, and Load_Type must be known or estimated.</span></div></div>
+          <div class="step"><div class="step-number">03</div><div><strong>Trained model forecast</strong><span>Returns predicted energy use and records the request for monitoring.</span></div></div>
+        </div>
+        <div class="model-chip"><span>Model service</span><strong id="model-service-name">FastAPI · Trained regressor</strong></div>
+      </aside>
+    </div>
+    <footer>Research dataset contains 2018 historical measurements from one plant. Live operational use requires real, current plant sensor data.</footer>
+  </main>
+  <script>
+    const message = document.querySelector("#message");
+    const historyFile = document.querySelector("#history-file");
+    const forecastButton = document.querySelector("#predict-button");
+    let historyPoints = null;
+
+    function showMessage(text, kind) {
+      message.textContent = text;
+      message.className = `message visible ${kind}`;
+    }
+
+    function renderTrainingSummary(payload) {
+      if (!payload.available) return;
+      const selected = payload.selected_test_metrics;
+      document.querySelector("#training-summary").textContent =
+        `${payload.input_rows.toLocaleString()} uploaded rows · ${payload.split_rows.train.toLocaleString()} train / ${payload.split_rows.validation.toLocaleString()} validation / ${payload.split_rows.test.toLocaleString()} held-out test rows. Selected using validation RMSE ${Number(payload.validation_rmse).toFixed(3)} kWh; test data was not used to select the model.`;
+      document.querySelector("#trained-model").textContent =
+        `${payload.selected_model.replaceAll("_", " ")} (${payload.model_version})`;
+      document.querySelector("#trained-mape").textContent =
+        `${Number(selected.MAPE_percent_nonzero_actuals).toFixed(2)}%`;
+      document.querySelector("#trained-rmse").textContent =
+        `${Number(selected.RMSE).toFixed(3)} kWh`;
+      document.querySelector("#trained-mae").textContent =
+        `${Number(selected.MAE).toFixed(3)} kWh`;
+      document.querySelector("#trained-r2").textContent =
+        Number(selected.R2).toFixed(4);
+      const comparison = document.querySelector("#training-comparison");
+      comparison.replaceChildren();
+      const rows = [
+        ["persistence_baseline", payload.test_metrics.persistence_baseline, null],
+        ...Object.entries(payload.test_metrics)
+          .filter(([name]) => name !== "persistence_baseline")
+          .map(([name, metrics]) => [name, metrics, payload.validation_metrics[name]]),
+      ];
+      for (const [name, metrics, validation] of rows) {
+        const row = document.createElement("tr");
+        const values = [
+          String(name).replaceAll("_", " "),
+          validation ? Number(validation.RMSE).toFixed(3) : "—",
+          Number(metrics.RMSE).toFixed(3),
+          `${Number(metrics.MAPE_percent_nonzero_actuals).toFixed(2)}%`,
+        ];
+        for (const value of values) {
+          const cell = document.createElement("td");
+          cell.textContent = value;
+          row.append(cell);
+        }
+        comparison.append(row);
+      }
+      document.querySelector("#training-result").classList.add("visible");
+    }
+
+    function switchTab(name) {
+      const live = name === "live";
+      document.querySelector("#live-panel").hidden = !live;
+      document.querySelector("#historical-panel").hidden = live;
+      document.querySelector("#live-tab").classList.toggle("active", live);
+      document.querySelector("#historical-tab").classList.toggle("active", !live);
+      document.querySelector("#live-tab").setAttribute("aria-selected", String(live));
+      document.querySelector("#historical-tab").setAttribute("aria-selected", String(!live));
+      document.querySelector("#forecast-result").classList.remove("visible");
+      document.querySelector("#historical-result").classList.remove("visible");
+      message.className = "message";
+    }
+
+    function cell(value) {
+      return value.trim().replace(/^"(.*)"$/, "$1");
+    }
+
+    function normalizeTimestamp(value) {
+      const source = cell(value);
+      let parts = source.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})[ T](\d{2}):(\d{2})$/);
+      if (parts) {
+        return `${parts[3]}-${parts[2].padStart(2, "0")}-${parts[1].padStart(2, "0")}T${parts[4]}:${parts[5]}:00`;
+      }
+      parts = source.match(/^(\d{4}-\d{2}-\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?$/);
+      if (parts) return `${parts[1]}T${parts[2]}:${parts[3]}:${parts[4] || "00"}`;
+      throw new Error(`Unrecognized timestamp "${source}". Use DD/MM/YYYY HH:mm or YYYY-MM-DD HH:mm.`);
+    }
+
+    async function readHistory(file) {
+      const text = await file.text();
+      const lines = text.trim().split(/\r?\n/);
+      if (lines.length < 2) throw new Error("CSV has no data rows.");
+      const headers = lines[0].split(",").map((value) => cell(value).toLowerCase());
+      const timestampIndex = headers.findIndex((value) => ["date", "timestamp", "datetime"].includes(value));
+      const usageIndex = headers.findIndex((value) => ["usage_kwh", "usage kwh"].includes(value));
+      if (timestampIndex < 0 || usageIndex < 0) {
+        throw new Error("CSV needs timestamp/date and Usage_kWh columns. The original UCI CSV is supported.");
+      }
+
+      const points = [];
+      for (const line of lines.slice(1)) {
+        if (!line.trim()) continue;
+        const values = line.split(",");
+        if (values.length <= Math.max(timestampIndex, usageIndex)) continue;
+        const timestamp = normalizeTimestamp(values[timestampIndex]);
+        const usage = Number(cell(values[usageIndex]));
+        if (!Number.isFinite(usage) || usage < 0) {
+          throw new Error(`Invalid non-negative Usage_kWh value in row ${points.length + 2}.`);
+        }
+        points.push({ timestamp, usage_kwh: usage });
+      }
+      points.sort((left, right) => left.timestamp.localeCompare(right.timestamp));
+      const recent = points.slice(-96);
+      if (recent.length < 96) throw new Error(`Need at least 96 readings; this file has ${recent.length} usable rows.`);
+      for (let index = 1; index < recent.length; index += 1) {
+        const previous = Date.parse(`${recent[index - 1].timestamp}Z`);
+        const current = Date.parse(`${recent[index].timestamp}Z`);
+        if (current - previous !== 15 * 60 * 1000) {
+          throw new Error("The latest 96 readings must be unique, consecutive 15-minute intervals with no gaps.");
+        }
+      }
+      return recent;
+    }
+
+    function nextInterval(timestamp) {
+      return new Date(Date.parse(`${timestamp}Z`) + 15 * 60 * 1000).toISOString().slice(0, 16);
+    }
+
+    document.querySelector("#live-tab").addEventListener("click", () => switchTab("live"));
+    document.querySelector("#historical-tab").addEventListener("click", () => switchTab("historical"));
+
+    historyFile.addEventListener("change", async () => {
+      historyPoints = null;
+      forecastButton.disabled = true;
+      const historyStatus = document.querySelector("#history-status");
+      const trainingResult = document.querySelector("#training-result");
+      trainingResult.classList.remove("visible");
+      historyStatus.className = "status-box";
+      try {
+        if (!historyFile.files.length) throw new Error("Choose a CSV file first.");
+        const file = historyFile.files[0];
+        historyStatus.textContent = "Checking the uploaded CSV and its latest 96 readings…";
+        historyPoints = await readHistory(file);
+        const last = historyPoints[historyPoints.length - 1];
+        document.querySelector("#forecast-timestamp").value = nextInterval(last.timestamp);
+        historyStatus.textContent = "CSV looks usable for history. Uploading and training both candidate models; this may take a minute…";
+        const response = await fetch("/train", {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/csv",
+            "X-Filename": encodeURIComponent(file.name),
+          },
+          body: file,
+        });
+        const payload = await response.json();
+        if (!response.ok) {
+          historyPoints = null;
+          throw new Error(typeof payload.detail === "string" ? payload.detail : "Dataset training failed.");
+        }
+        renderTrainingSummary(payload);
+        historyStatus.textContent =
+          `Training complete. ${historyPoints.length} latest actual readings loaded through ${last.timestamp.replace("T", " ")}.`;
+        historyStatus.className = "status-box success";
+        document.querySelector("#forecast-result").classList.remove("visible");
+        forecastButton.disabled = false;
+        message.className = "message";
+        await initialize();
+      } catch (error) {
+        historyStatus.textContent = error.message;
+        showMessage(error.message, "error");
+      }
+    });
+
+    document.querySelector("#prediction-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!historyPoints) {
+        showMessage("Upload at least 96 real consecutive history readings first.", "error");
+        return;
+      }
+      forecastButton.disabled = true;
+      document.querySelector("#historical-result").classList.remove("visible");
+      message.className = "message";
+      const future = {
+        timestamp: `${document.querySelector("#forecast-timestamp").value}:00`,
+        Load_Type: document.querySelector("#load-type").value,
+        "Lagging_Current_Reactive.Power_kVarh": Number(document.querySelector("#lagging-reactive").value),
+        "Leading_Current_Reactive_Power_kVarh": Number(document.querySelector("#leading-reactive").value),
+        "Lagging_Current_Power_Factor": Number(document.querySelector("#lagging-factor").value),
+        "Leading_Current_Power_Factor": Number(document.querySelector("#leading-factor").value),
+      };
+      try {
+        const response = await fetch("/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ history: historyPoints, future_intervals: [future] }),
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(typeof payload.detail === "string" ? payload.detail : "Check the entered values.");
+        document.querySelector("#forecast-value").textContent =
+          Number(payload.predictions[0].predicted_Usage_kWh).toFixed(3);
+        document.querySelector("#forecast-meta").textContent =
+          `For ${payload.predictions[0].timestamp.replace("T", " ")} · Model ${payload.model_version}`;
+        document.querySelector("#forecast-result").classList.add("visible");
+        showMessage("Forecast completed from your uploaded history and entered interval conditions.", "info");
+      } catch (error) {
+        showMessage(error.message || "Prediction failed. Check your inputs and try again.", "error");
+      } finally {
+        forecastButton.disabled = false;
+      }
+    });
+
+    document.querySelector("#historical-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const button = document.querySelector("#historical-button");
+      button.disabled = true;
+      document.querySelector("#forecast-result").classList.remove("visible");
+      message.className = "message";
+      try {
+        const timestamp = document.querySelector("#historical-timestamp").value;
+        const response = await fetch("/historical-test", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ timestamp: `${timestamp}:00` }),
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(typeof payload.detail === "string" ? payload.detail : "Choose a timestamp in the test range.");
+        document.querySelector("#actual-value").textContent = `${Number(payload.actual_Usage_kWh).toFixed(3)} kWh`;
+        document.querySelector("#historical-value").textContent = `${Number(payload.predicted_Usage_kWh).toFixed(3)} kWh`;
+        document.querySelector("#error-value").textContent = `${Number(payload.absolute_error_kWh).toFixed(3)} kWh`;
+        document.querySelector("#historical-time").textContent = payload.timestamp.replace("T", " ");
+        document.querySelector("#historical-result").classList.add("visible");
+        showMessage(`Historical test completed using model ${payload.model_version}.`, "info");
+      } catch (error) {
+        showMessage(error.message || "Historical test failed.", "error");
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    async function initialize() {
+      const [healthResponse, testResponse, trainingResponse] = await Promise.all([
+        fetch("/health"),
+        fetch("/historical-test-info"),
+        fetch("/training-summary"),
+      ]);
+      if (!healthResponse.ok) throw new Error("Could not check the model service.");
+      const health = await healthResponse.json();
+      document.querySelector("#service-status").textContent =
+        health.model_ready ? "Model ready" : "Model unavailable";
+      if (!health.model_ready) throw new Error("No trained model was found. Train a model first.");
+      const modelName = String(health.model_name || "trained regressor")
+        .replaceAll("_", " ")
+        .replace(/\b\w/g, (letter) => letter.toUpperCase());
+      document.querySelector("#model-version-tag").textContent =
+        `MODEL ${health.model_version}`;
+      document.querySelector("#model-service-name").textContent =
+        `FastAPI · ${modelName} ${health.model_version}`;
+      if (trainingResponse.ok) {
+        renderTrainingSummary(await trainingResponse.json());
+      }
+
+      const button = document.querySelector("#historical-button");
+      if (testResponse.ok) {
+        const testRange = await testResponse.json();
+        document.querySelector("#test-range").textContent =
+          `${testRange.available_rows.toLocaleString()} held-out records · ${testRange.start_timestamp.replace("T", " ")} to ${testRange.end_timestamp.replace("T", " ")}.`;
+        document.querySelector("#historical-timestamp").min = testRange.start_timestamp.slice(0, 16);
+        document.querySelector("#historical-timestamp").max = testRange.end_timestamp.slice(0, 16);
+        document.querySelector("#historical-timestamp").value = testRange.start_timestamp.slice(0, 16);
+        button.disabled = false;
+      } else {
+        const error = await testResponse.json();
+        document.querySelector("#test-range").textContent = error.detail || "Held-out test records are unavailable.";
+      }
+    }
+
+    initialize().catch((error) => {
+      document.querySelector("#service-status").textContent = "Service unavailable";
+      showMessage(error.message, "error");
+    });
+  </script>
+</body>
+</html>

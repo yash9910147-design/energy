@@ -1,0 +1,60 @@
+{
+  "test_period": {
+    "start": "2018-11-07 09:30:00",
+    "end": "2018-12-31 23:45:00"
+  },
+  "evaluation_scope": "Rolling one-step forecasts: each row's lag features use previously measured Usage_kWh, including within the test period. Recursive multi-step performance is not represented by these metrics.",
+  "selected_model": "random_forest",
+  "selection_rule": "Model selected using validation RMSE; test data was held out.",
+  "test_metrics": [
+    {
+      "model": "persistence_baseline",
+      "MAE": 5.055679130103014,
+      "MSE": 135.83222760396794,
+      "RMSE": 11.654708387770496,
+      "MAPE_percent_nonzero_actuals": 20.10507625309415,
+      "R2": 0.8603190624373483,
+      "rows": 5242,
+      "zero_actual_rows_excluded_from_MAPE": 0
+    },
+    {
+      "model": "random_forest",
+      "MAE": 1.0309550243758054,
+      "MSE": 5.646298389593214,
+      "RMSE": 2.376194097626121,
+      "MAPE_percent_nonzero_actuals": 8.05935108873274,
+      "R2": 0.9941937177448319,
+      "rows": 5242,
+      "zero_actual_rows_excluded_from_MAPE": 0
+    },
+    {
+      "model": "xgboost",
+      "MAE": 0.9659196883292201,
+      "MSE": 3.1839431808766414,
+      "RMSE": 1.7843607205037442,
+      "MAPE_percent_nonzero_actuals": 7.498920319798819,
+      "R2": 0.996725842044292,
+      "rows": 5242,
+      "zero_actual_rows_excluded_from_MAPE": 0
+    }
+  ],
+  "error_by_load_type": {
+    "Light_Load": {
+      "rows": 2835,
+      "MAE": 0.36929340207285627,
+      "bias": 0.03962812521089248
+    },
+    "Maximum_Load": {
+      "rows": 1032,
+      "MAE": 2.070698472969497,
+      "bias": 0.39337480308688133
+    },
+    "Medium_Load": {
+      "rows": 1375,
+      "MAE": 1.6148062682159294,
+      "bias": 1.1168825869464956
+    }
+  },
+  "worst_25_errors_csv": "outputs/reports/error_analysis_worst_25.csv",
+  "zero_target_mape_note": "MAPE is computed only on non-zero actual Usage_kWh rows; zero rows are counted in zero_actual_rows_excluded_from_MAPE."
+}
